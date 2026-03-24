@@ -2,7 +2,8 @@
 
 A full-stack executive job marketplace with JWT authentication, role-based access control, and a premium dark UI — deployed entirely on **Netlify** (frontend + serverless backend + database).
 
-**Live:** https://arnifijobapp.netlify.app · **Repo:** github.com/BugHunterX2101/arnifi-job-app
+**Live:** https://arnifijobapp.netlify.app 
+**Repo:** github.com/BugHunterX2101/arnifi-job-app
 
 ---
 
