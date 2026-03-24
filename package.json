@@ -2,13 +2,14 @@
   "name": "arnifi-job-app",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "npm install --prefix netlify/functions && npm install --prefix client && npm run build --prefix client",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
     "install:all": "npm install --prefix server && npm install --prefix client && npm install --prefix netlify/functions",
-    "seed": "cd server && node seed.js"
+    "seed": "node server/seed.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

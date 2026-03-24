@@ -1,10 +1,7 @@
 [build]
   publish = "client/dist"
-  command = "npm run build"
+  command = "npm install --prefix netlify/functions && npm install --prefix client && npm run build --prefix client"
   functions = "netlify/functions"
-
-[build.environment]
-  NODE_VERSION = "18.20.4"
 
 [[redirects]]
   from = "/api/*"
