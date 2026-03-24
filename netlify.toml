@@ -1,18 +1,16 @@
 [build]
   publish = "client/dist"
-  command = "npm install --prefix netlify/functions && npm install --prefix client && npm run build --prefix client"
+  command = "npm run build"
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "18.20.4"
 
-# Route all /api/* calls to the serverless function
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
 
-# SPA fallback — must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -21,4 +19,3 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["pg", "pg-hstore", "sequelize", "bcryptjs"]
-

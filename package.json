@@ -1,16 +1,14 @@
 {
   "name": "arnifi-job-app",
   "version": "1.0.0",
-  "description": "Arnifi Job App – Sovereign Executive Platform (Full-Stack)",
   "private": true,
   "scripts": {
+    "build": "npm install --prefix netlify/functions && npm install --prefix client && npm run build --prefix client",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "start:server": "cd server && npm start",
-    "build": "cd client && npm install && npm run build",
-    "install:all": "npm install --prefix server && npm install --prefix client",
-    "seed": "cd server && npm run seed"
+    "install:all": "npm install --prefix server && npm install --prefix client && npm install --prefix netlify/functions",
+    "seed": "cd server && node seed.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
