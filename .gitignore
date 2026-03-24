@@ -1,0 +1,38 @@
+# ─── Dependencies ─────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Build outputs ───────────────────────────────
+dist/
+build/
+client/dist/
+
+# ─── Environment ─────────────────────────────────
+.env
+.env.local
+.env.*.local
+server/.env
+
+# ─── Logs ────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── OS / Editor ─────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ─── Test / Coverage ─────────────────────────────
+coverage/
+*.test.js.snap
+
+# Netlify build output
+.netlify/
+
+# Client build (generated at deploy time)
+client/dist/

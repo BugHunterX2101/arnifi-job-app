@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-sovereign-black text-sovereign-platinum antialiased;
+  }
+
+  body {
+    @apply min-h-screen bg-sovereign-black;
+  }
+
+  * {
+    @apply border-sovereign-border;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-sovereign-dark;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-sovereign-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-sovereign-gold;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply bg-gold-gradient text-sovereign-black font-semibold px-6 py-3 rounded-sm
+           hover:opacity-90 active:scale-95 transition-all duration-200 tracking-wide text-sm;
+  }
+
+  .btn-outline {
+    @apply border border-sovereign-gold text-sovereign-gold px-6 py-3 rounded-sm
+           hover:bg-sovereign-gold hover:text-sovereign-black font-semibold
+           transition-all duration-200 tracking-wide text-sm;
+  }
+
+  .btn-ghost {
+    @apply text-sovereign-muted hover:text-sovereign-platinum px-4 py-2
+           transition-colors duration-200 text-sm;
+  }
+
+  .input-sovereign {
+    @apply w-full bg-sovereign-dark border border-sovereign-border text-sovereign-platinum
+           placeholder-sovereign-muted px-4 py-3 rounded-sm text-sm
+           focus:outline-none focus:border-sovereign-gold focus:ring-1 focus:ring-sovereign-gold
+           transition-colors duration-200;
+  }
+
+  .card-sovereign {
+    @apply bg-sovereign-card border border-sovereign-border rounded-sm p-6;
+  }
+
+  .label-sovereign {
+    @apply block text-sovereign-muted text-xs tracking-widest uppercase mb-2 font-medium;
+  }
+
+  .tag-type {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium
+           bg-sovereign-dark border border-sovereign-border text-sovereign-muted;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold tracking-wide uppercase;
+  }
+}
