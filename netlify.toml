@@ -3,6 +3,16 @@
   command = "npm install --prefix netlify/functions && npm install --prefix client && npm run build --prefix client"
   functions = "netlify/functions"
 
+# Local development: `netlify dev` will spin up the Vite dev server on port 5173
+# and proxy all /api/* requests to the serverless function emulator on port 8888.
+[dev]
+  command = "npm run dev --prefix client"
+  port = 8888
+  targetPort = 5173
+  # Environment variables are loaded from .env in the repo root.
+  # Copy .env.example → .env and fill in the values before running `netlify dev`.
+  envFile = ".env"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"

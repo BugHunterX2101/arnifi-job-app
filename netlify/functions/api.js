@@ -16,6 +16,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── DB sync (cached — only runs once per serverless cold start) ───────────────
+let syncPromise = null;
+const syncDb = () => {
+  if (!syncPromise) {
+    const { sequelize } = getModels();
+    // alter:false — create tables if missing, never destructively alter columns
+    syncPromise = sequelize.sync({ alter: false }).catch((err) => {
+      // Reset on failure so the next request retries
+      syncPromise = null;
+      return Promise.reject(err);
+    });
+  }
+  return syncPromise;
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const jwtSign = (user) =>
   jwt.sign(
@@ -41,11 +56,6 @@ const authorize = (...roles) => (req, res, next) => {
     return res.status(403).json({ message: `Requires role: ${roles.join(' or ')}.` });
   }
   next();
-};
-
-const syncDb = async () => {
-  const { sequelize } = getModels();
-  await sequelize.sync({ alter: false });
 };
 
 // ── Health ────────────────────────────────────────────────────────────────────
@@ -240,11 +250,12 @@ app.patch('/api/applications/:id/status', authenticate, authorize('admin'), asyn
     const allowed = ['pending', 'reviewed', 'accepted', 'rejected'];
     if (!allowed.includes(status))
       return res.status(400).json({ message: `Status must be one of: ${allowed.join(', ')}.` });
-    const app = await Application.findByPk(req.params.id);
-    if (!app) return res.status(404).json({ message: 'Application not found.' });
-    app.status = status;
-    await app.save();
-    res.json({ id: app.id, status: app.status });
+    // Use 'application' to avoid shadowing the top-level 'app' (Express instance)
+    const application = await Application.findByPk(req.params.id);
+    if (!application) return res.status(404).json({ message: 'Application not found.' });
+    application.status = status;
+    await application.save();
+    res.json({ id: application.id, status: application.status });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

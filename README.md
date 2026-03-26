@@ -87,7 +87,7 @@ npm install --prefix netlify/functions
 npm install --prefix client
 ```
 
-Create `netlify/.env`:
+Create **`.env`** in the **repo root** (Netlify CLI reads this automatically via the `[dev].envFile` setting in `netlify.toml`):
 
 ```env
 DATABASE_URL=postgresql://postgres:yourpassword@db.xxxx.supabase.co:5432/postgres
@@ -95,6 +95,8 @@ JWT_SECRET=your_super_secret_jwt_key_minimum_32_characters
 JWT_EXPIRES_IN=30d
 NODE_ENV=development
 ```
+
+> ⚠️ The `.env` file must be in the **repo root**, not in `netlify/`. See `.env.example` for a template.
 
 ```bash
 npm run seed        # seed DB with 2 accounts + 6 job listings

@@ -41,12 +41,17 @@ app.use(errorHandler);
 
 // ─── Database & Server ────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
+const isDev = process.env.NODE_ENV !== 'production';
 
 sequelize
   .authenticate()
-  .then(() => sequelize.sync({ alter: true }))
+  .then(() =>
+    // alter:true is useful in development to auto-apply model changes,
+    // but MUST NOT be used in production — it can drop/alter columns.
+    sequelize.sync({ alter: isDev })
+  )
   .then(() => {
-    console.log('PostgreSQL connected & tables synced');
+    console.log(`PostgreSQL connected & tables synced (alter=${isDev})`);
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
