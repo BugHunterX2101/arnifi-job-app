@@ -6,6 +6,109 @@ A full-stack executive job marketplace with JWT authentication, role-based acces
 
 ---
 
+## System Architecture
+
+```mermaid
+graph TB
+    subgraph Browser["🌐 Browser"]
+        SPA["React 18 SPA<br/>(Vite + Redux Toolkit + Tailwind CSS)"]
+        LS["localStorage<br/>(JWT token + user object)"]
+        SPA <-->|"persist / hydrate auth"| LS
+    end
+
+    subgraph Netlify["☁️ Netlify (arnifijobapp.netlify.app)"]
+        CDN["CDN Edge<br/>(client/dist — static assets)"]
+        REDIR["Redirect Rule<br/>/api/* → /.netlify/functions/api/:splat"]
+        FN["Serverless Function<br/>(Express + serverless-http)<br/>netlify/functions/api.js"]
+
+        CDN --> REDIR
+        REDIR --> FN
+    end
+
+    subgraph Auth["🔐 Auth Layer (inside Function)"]
+        JWT["JWT Middleware<br/>authenticateToken()"]
+        RBAC["RBAC Middleware<br/>authorizeRole('admin' | 'user')"]
+        JWT --> RBAC
+    end
+
+    subgraph API["📡 REST Endpoints"]
+        A1["POST /api/auth/signup<br/>POST /api/auth/login"]
+        A2["GET /api/jobs<br/>GET /api/jobs/:id"]
+        A3["POST /api/jobs<br/>PUT /api/jobs/:id<br/>DELETE /api/jobs/:id<br/>— admin only —"]
+        A4["POST /api/jobs/:id/apply<br/>— user only —"]
+        A5["GET /api/applications<br/>PATCH /api/applications/:id/status<br/>— admin only —"]
+    end
+
+    subgraph DB["🗄️ Supabase (PostgreSQL)"]
+        U[("users<br/>id · name · email<br/>password_hash · role")]
+        J[("jobs<br/>id · title · company<br/>location · type · description<br/>compensation · posted_by")]
+        APP[("applications<br/>id · job_id · applicant_id<br/>cover_letter · status")]
+        U -->|"1 : many"| J
+        U -->|"1 : many"| APP
+        J -->|"1 : many"| APP
+    end
+
+    SPA -->|"fetch /api/*<br/>(Bearer JWT)"| CDN
+    FN --> Auth
+    Auth --> API
+    A1 -->|"Sequelize ORM<br/>bcrypt · SSL pool"| U
+    A2 -->|"Sequelize ORM"| J
+    A3 -->|"Sequelize ORM"| J
+    A4 -->|"Sequelize ORM"| APP
+    A5 -->|"Sequelize ORM"| APP
+
+    style Browser fill:#0d0d1a,stroke:#c9a84c,color:#e8e8f0
+    style Netlify fill:#0d1a0d,stroke:#4caf50,color:#e8e8f0
+    style Auth fill:#1a0d0d,stroke:#ef5350,color:#e8e8f0
+    style API fill:#0d0d1a,stroke:#c9a84c,color:#e8e8f0
+    style DB fill:#0d1a1a,stroke:#26c6da,color:#e8e8f0
+```
+
+---
+
+## Data Flow
+
+```mermaid
+sequenceDiagram
+    actor User as 👤 User / Admin
+    participant SPA as React SPA
+    participant LS as localStorage
+    participant FN as Netlify Function
+    participant DB as Supabase PostgreSQL
+
+    Note over User,DB: Authentication
+    User->>SPA: Enter email + password
+    SPA->>FN: POST /api/auth/login
+    FN->>DB: SELECT user WHERE email = ?
+    DB-->>FN: User row (with password_hash)
+    FN->>FN: bcrypt.compare(password, hash)
+    FN-->>SPA: { token (JWT), user }
+    SPA->>LS: Store token + user
+    SPA-->>User: Redirect → /dashboard
+
+    Note over User,DB: Applying to a Job (user role)
+    User->>SPA: Click "Submit Application"
+    SPA->>FN: POST /api/jobs/:id/apply<br/>Authorization: Bearer <JWT>
+    FN->>FN: authenticateToken() — verify JWT
+    FN->>FN: authorizeRole('user') — check role
+    FN->>DB: INSERT INTO applications
+    DB-->>FN: New application row
+    FN-->>SPA: { applicationId, status: 'pending' }
+    SPA-->>User: Success banner + link to /applications
+
+    Note over User,DB: Update Application Status (admin role)
+    User->>SPA: Click status button (admin)
+    SPA->>FN: PATCH /api/applications/:id/status<br/>{ status: 'accepted' }
+    FN->>FN: authenticateToken() + authorizeRole('admin')
+    FN->>DB: UPDATE applications SET status = ?
+    DB-->>FN: Updated row
+    FN-->>SPA: { id, status }
+    SPA->>SPA: Redux store updated (optimistic UI)
+    SPA-->>User: Status badge updates instantly
+```
+
+---
+
 ## File Structure
 
 ```
