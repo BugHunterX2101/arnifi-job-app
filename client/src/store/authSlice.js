@@ -2,7 +2,18 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api/axios';
 
 const savedToken = localStorage.getItem('sovereign_token');
-const savedUser = localStorage.getItem('sovereign_user');
+
+// FIX: Wrap JSON.parse in try/catch — if the stored value is corrupted or
+// tampered with, JSON.parse throws a SyntaxError which crashes the entire app
+// on startup. Gracefully fall back to null instead.
+let savedUser = null;
+try {
+  const raw = localStorage.getItem('sovereign_user');
+  if (raw) savedUser = JSON.parse(raw);
+} catch {
+  localStorage.removeItem('sovereign_user');
+  localStorage.removeItem('sovereign_token');
+}
 
 export const signupUser = createAsyncThunk('auth/signup', async (data, { rejectWithValue }) => {
   try {
@@ -25,7 +36,7 @@ export const loginUser = createAsyncThunk('auth/login', async (data, { rejectWit
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: savedUser ? JSON.parse(savedUser) : null,
+    user: savedUser,
     token: savedToken || null,
     status: 'idle',
     error: null,

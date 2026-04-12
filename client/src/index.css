@@ -11,9 +11,11 @@
     @apply min-h-screen bg-sovereign-black;
   }
 
-  * {
-    @apply border-sovereign-border;
-  }
+  /* FIX: Removed `* { @apply border-sovereign-border; }` — applying a
+     border-color to every element is a Tailwind anti-pattern that overrides
+     component-level styles and causes unexpected visual glitches (e.g., focus
+     rings, outlines, and SVG strokes picking up the dark border colour).
+     Borders are now applied explicitly per component via Tailwind classes. */
 
   ::-webkit-scrollbar {
     @apply w-1.5;

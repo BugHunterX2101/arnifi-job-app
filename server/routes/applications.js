@@ -1,6 +1,6 @@
 const express = require('express');
 const { Application, Job, User } = require('../models');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,12 +55,9 @@ router.get('/', authenticateToken, async (req, res, next) => {
 });
 
 // PATCH /api/applications/:id/status — admin only
-router.patch('/:id/status', authenticateToken, async (req, res, next) => {
+// FIX: Use authorizeRole middleware instead of manual role check inside handler
+router.patch('/:id/status', authenticateToken, authorizeRole('admin'), async (req, res, next) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only admins can update application status.' });
-    }
-
     const { status } = req.body;
     const allowed = ['pending', 'reviewed', 'accepted', 'rejected'];
     if (!allowed.includes(status)) {

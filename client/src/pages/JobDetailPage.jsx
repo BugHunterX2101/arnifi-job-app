@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchJobById, applyToJob, deleteJob, clearApplyStatus } from '../store/jobsSlice';
+import { fetchJobById, applyToJob, deleteJob, clearApplyStatus, clearSelected } from '../store/jobsSlice';
 
 const TYPE_LABELS = {
   'full-time': 'Full-Time',
@@ -15,14 +15,19 @@ export default function JobDetailPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
-  const { selected: job, status, applyStatus, applyError } = useSelector((s) => s.jobs);
+  const { selected: job, status, error, applyStatus, applyError } = useSelector((s) => s.jobs);
 
   const [coverLetter, setCoverLetter] = useState('');
   const [showApply, setShowApply] = useState(false);
 
   useEffect(() => {
     dispatch(fetchJobById(id));
-    return () => { dispatch(clearApplyStatus()); };
+    // FIX: Clear selected job on unmount to prevent stale data flash
+    // when navigating from one job detail page to another.
+    return () => {
+      dispatch(clearSelected());
+      dispatch(clearApplyStatus());
+    };
   }, [dispatch, id]);
 
   const handleApply = (e) => {
@@ -38,10 +43,26 @@ export default function JobDetailPage() {
 
   const isAdmin = user?.role === 'admin';
 
-  if (status === 'loading' || !job) {
+  // FIX: Distinguish between loading and error/not-found states.
+  // Previously, if status became 'failed' but job was null, the spinner
+  // would render indefinitely with no feedback to the user.
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-6 h-6 border-2 border-sovereign-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (status === 'failed' || !job) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 animate-fade-in">
+        <p className="font-display text-sovereign-platinum text-2xl">
+          {error || 'Opportunity not found.'}
+        </p>
+        <Link to="/jobs" className="btn-outline py-2 text-sm">
+          ← Back to Opportunities
+        </Link>
       </div>
     );
   }

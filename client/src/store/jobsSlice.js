@@ -40,7 +40,7 @@ export const updateJob = createAsyncThunk('jobs/update', async ({ id, data }, { 
 export const deleteJob = createAsyncThunk('jobs/delete', async (id, { rejectWithValue }) => {
   try {
     await api.delete(`/jobs/${id}`);
-    return id; // returns the UUID string
+    return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Failed to delete job.');
   }
@@ -78,7 +78,9 @@ const jobsSlice = createSlice({
       .addCase(fetchJobs.rejected, (s, a) => { s.status = 'failed'; s.error = a.payload; })
 
       // fetchById
-      .addCase(fetchJobById.pending, (s) => { s.status = 'loading'; })
+      // FIX: Reset error on pending so a stale error from a previous fetch
+      // doesn't remain visible while the new request is in-flight.
+      .addCase(fetchJobById.pending, (s) => { s.status = 'loading'; s.error = null; })
       .addCase(fetchJobById.fulfilled, (s, a) => { s.status = 'succeeded'; s.selected = a.payload; })
       .addCase(fetchJobById.rejected, (s, a) => { s.status = 'failed'; s.error = a.payload; })
 

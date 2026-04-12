@@ -15,6 +15,7 @@ export default function LoginPage() {
     if (user) navigate(location.state?.from?.pathname || '/dashboard', { replace: true });
   }, [user, navigate, location]);
 
+  // FIX: clear auth error on unmount to prevent stale error showing on revisit
   useEffect(() => () => { dispatch(clearAuthError()); }, [dispatch]);
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -43,6 +44,9 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* FIX: Removed non-functional Google/Apple SSO buttons that had no
+              onClick handlers and would mislead users into thinking OAuth was
+              available. Keeping only the working email/password form. */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="label-sovereign">Institutional Email</label>
@@ -80,26 +84,6 @@ export default function LoginPage() {
               {status === 'loading' ? 'Authenticating...' : 'Initiate Session'}
             </button>
           </form>
-
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-sovereign-border" />
-            <span className="text-sovereign-muted text-xs tracking-widest uppercase">or</span>
-            <div className="flex-1 h-px bg-sovereign-border" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {['Google', 'Apple ID'].map((provider) => (
-              <button
-                key={provider}
-                type="button"
-                className="flex items-center justify-center gap-2 px-4 py-3 border border-sovereign-border
-                           text-sovereign-muted text-xs tracking-wide hover:border-sovereign-gold/40
-                           hover:text-sovereign-platinum transition-all duration-200 rounded-sm"
-              >
-                {provider}
-              </button>
-            ))}
-          </div>
         </div>
 
         <p className="text-center text-sovereign-muted text-sm mt-6">

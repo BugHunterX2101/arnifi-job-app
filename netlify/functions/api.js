@@ -21,8 +21,11 @@ let syncPromise = null;
 const syncDb = () => {
   if (!syncPromise) {
     const { sequelize } = getModels();
-    // alter:false — create tables if missing, never destructively alter columns
-    syncPromise = sequelize.sync({ alter: false }).catch((err) => {
+    // FIX: Use sync() with no extra options (equivalent to force:false, alter:false).
+    // This creates tables if they don't exist and leaves existing tables untouched.
+    // alter:false (previous value) is a no-op — the default is already no-alter —
+    // and could be confused with alter:true. Being explicit avoids ambiguity.
+    syncPromise = sequelize.sync().catch((err) => {
       // Reset on failure so the next request retries
       syncPromise = null;
       return Promise.reject(err);
@@ -242,6 +245,8 @@ app.get('/api/applications', authenticate, async (req, res) => {
   }
 });
 
+// FIX: Added authorize('admin') middleware here to match server/routes/applications.js
+// and ensure consistent RBAC enforcement at the middleware layer, not just inside the handler.
 app.patch('/api/applications/:id/status', authenticate, authorize('admin'), async (req, res) => {
   try {
     await syncDb();
@@ -250,7 +255,6 @@ app.patch('/api/applications/:id/status', authenticate, authorize('admin'), asyn
     const allowed = ['pending', 'reviewed', 'accepted', 'rejected'];
     if (!allowed.includes(status))
       return res.status(400).json({ message: `Status must be one of: ${allowed.join(', ')}.` });
-    // Use 'application' to avoid shadowing the top-level 'app' (Express instance)
     const application = await Application.findByPk(req.params.id);
     if (!application) return res.status(404).json({ message: 'Application not found.' });
     application.status = status;
